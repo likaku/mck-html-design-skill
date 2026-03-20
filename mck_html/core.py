@@ -245,24 +245,24 @@ body.page-mode .slide-number-badge {{
 .text-subheader {{
     font-size: {SUB_HEADER_SIZE}px;
     font-weight: bold;
-    line-height: 1.3;
+    line-height: 1.25;
 }}
 
 .text-emphasis {{
     font-size: {EMPHASIS_SIZE}px;
     font-weight: bold;
-    line-height: 1.3;
+    line-height: 1.25;
 }}
 
 .text-body {{
     font-size: {BODY_SIZE}px;
-    line-height: 1.5;
+    line-height: 1.35;
     color: {DARK_GRAY};
 }}
 
 .text-small {{
     font-size: {SMALL_SIZE}px;
-    line-height: 1.4;
+    line-height: 1.35;
     color: {DARK_GRAY};
 }}
 
@@ -879,7 +879,7 @@ def add_image_placeholder(width, height, label='Image'):
 
 
 def add_text(text, font_size=BODY_SIZE, color=DARK_GRAY, bold=False,
-             align='left', font_family=None, line_height=1.5):
+             align='left', font_family=None, line_height=1.35):
     """Create styled text element."""
     if font_family is None:
         font_family = FONT_STACK_BODY

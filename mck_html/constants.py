@@ -62,17 +62,17 @@ BOTTOM_BAR_Y    = 620    # Default bottom summary bar
 BOTTOM_BAR_H    = 65     # Bottom bar height
 
 # ═══════════════════════════════════════════
-# TYPOGRAPHY (CSS)
+# TYPOGRAPHY (CSS px — converted from PPT pt × 1.333)
 # ═══════════════════════════════════════════
 
-COVER_TITLE_SIZE   = 44
-SECTION_TITLE_SIZE = 28
-ACTION_TITLE_SIZE  = 22
-SUB_HEADER_SIZE    = 18
-EMPHASIS_SIZE      = 16
-BODY_SIZE          = 14
-SMALL_SIZE         = 12
-FOOTNOTE_SIZE      = 9
+COVER_TITLE_SIZE   = 56   # was 44pt → 58.7px, rounded to 56 for visual balance
+SECTION_TITLE_SIZE = 36   # was 28pt → 37.3px
+ACTION_TITLE_SIZE  = 28   # was 22pt → 29.3px
+SUB_HEADER_SIZE    = 22   # was 18pt → 24.0px
+EMPHASIS_SIZE      = 20   # was 16pt → 21.3px
+BODY_SIZE          = 18   # was 14pt → 18.7px
+SMALL_SIZE         = 15   # was 12pt → 16.0px
+FOOTNOTE_SIZE      = 11   # was 9pt  → 12.0px
 
 FONT_HEADER = "'Georgia', 'Times New Roman', serif"
 FONT_BODY   = "'Arial', 'Helvetica Neue', sans-serif"

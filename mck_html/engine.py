@@ -62,7 +62,7 @@ class MckHtmlEngine:
 
     def _text(self, left, top, width, height, text, font_size=BODY_SIZE,
               color=DARK_GRAY, bold=False, align='left', font_family=None,
-              valign='top', line_height=1.5):
+              valign='top', line_height=1.35):
         """Absolutely positioned text box."""
         if font_family is None:
             font_family = FONT_STACK_BODY
@@ -106,7 +106,7 @@ class MckHtmlEngine:
         sub_y = 120 + title_h + 30
         if subtitle:
             parts.append(self._text(100, sub_y, 1100, 80, subtitle,
-                                    font_size=24, color=DARK_GRAY))
+                                    font_size=SUB_HEADER_SIZE, color=DARK_GRAY))
             sub_y += 100
         else:
             sub_y += 20
@@ -305,7 +305,8 @@ class MckHtmlEngine:
 
     def data_table(self, title, headers, rows, col_widths=None, source='',
                    bottom_bar=None):
-        """Data Table — header row + data rows with separators."""
+        """Data Table — header row + data rows with separators.
+        Auto-downsizes font when rows are dense."""
         p = self._ns()
         parts = [add_action_title(title)]
         n = len(headers)
@@ -319,11 +320,19 @@ class MckHtmlEngine:
             cx += cw
         parts.append(self._hline(LM, hdr_y + 45, CW, BLACK, 1))
         row_y = hdr_y + 55
-        row_h = min(95, int((SOURCE_Y - 10 - row_y) / max(len(rows), 1)))
+        avail_h = (SOURCE_Y - 10) - row_y
+        row_h = min(95, int(avail_h / max(len(rows), 1)))
+        # Font downgrade: BODY → SMALL → 13px based on row density
+        if row_h < 35:
+            cell_fs = 13
+        elif row_h < 50:
+            cell_fs = SMALL_SIZE
+        else:
+            cell_fs = SMALL_SIZE
         for ri, row in enumerate(rows):
             cx = LM
             for val, cw in zip(row, col_widths):
-                parts.append(self._text(cx, row_y, cw, row_h, val, font_size=SMALL_SIZE))
+                parts.append(self._text(cx, row_y, cw, row_h, val, font_size=cell_fs))
                 cx += cw
             row_y += row_h
             parts.append(self._hline(LM, row_y, CW, LINE_GRAY))
@@ -353,17 +362,24 @@ class MckHtmlEngine:
                                     font_size=BODY_SIZE, color=BLACK, bold=True))
             cx += cw
         parts.append(self._hline(LM, hdr_y + 45, table_w, BLACK, 1))
-        # Table rows
+        # Table rows — with font downgrade for dense tables
         row_start = hdr_y + 55
         avail_h = (BOTTOM_BAR_Y - 15 if bottom_bar else SOURCE_Y - 10) - row_start
         n_rows = len(rows)
         row_h = min(155, int(avail_h / max(n_rows, 1)))
+        # Font downgrade when rows are dense
+        if row_h < 45:
+            fs_first = BODY_SIZE
+            fs_rest = SMALL_SIZE
+        else:
+            fs_first = SUB_HEADER_SIZE
+            fs_rest = BODY_SIZE
         for ri, row in enumerate(rows):
             ry = row_start + row_h * ri
             cx = LM
             for ci, (val, cw) in enumerate(zip(row, col_widths)):
                 fb = True if ci == 0 else False
-                fs = SUB_HEADER_SIZE if ci == 0 else BODY_SIZE
+                fs = fs_first if ci == 0 else fs_rest
                 fc = BLACK if ci == 0 else DARK_GRAY
                 parts.append(self._text(cx, ry, cw, row_h, val, font_size=fs,
                                         color=fc, bold=fb, valign='middle'))
@@ -587,7 +603,7 @@ class MckHtmlEngine:
         parts.append(f'<div style="position:absolute; left:{line_x - 25}px; top:{ct + 200}px; width:50px; height:50px; border-radius:50%; background:{BLACK}; color:{WHITE}; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:bold;">&gt;</div>')
         # Left
         parts.append(self._text(left_x, ct, left_w, 50, before_title,
-                                font_size=16, color=BLACK, bold=True))
+                                font_size=EMPHASIS_SIZE, color=BLACK, bold=True))
         if isinstance(before_points, list) and before_points and isinstance(before_points[0], str):
             parts.append(self._text(left_x, ct + 60, left_w, 400, before_points,
                                     font_size=SMALL_SIZE))
@@ -596,10 +612,10 @@ class MckHtmlEngine:
                                     font_size=SMALL_SIZE))
         if left_summary:
             parts.append(self._text(left_x, 580, left_w, 35, left_summary,
-                                    font_size=12, color=DARK_GRAY, bold=True))
+                                    font_size=SMALL_SIZE, color=DARK_GRAY, bold=True))
         # Right
         parts.append(self._text(right_x, ct, right_w, 50, after_title,
-                                font_size=16, color=BLACK, bold=True))
+                                font_size=EMPHASIS_SIZE, color=BLACK, bold=True))
         if isinstance(after_points, list) and after_points and isinstance(after_points[0], str):
             parts.append(self._text(right_x, ct + 60, right_w, 400, after_points,
                                     font_size=SMALL_SIZE))
@@ -608,7 +624,7 @@ class MckHtmlEngine:
                                     font_size=SMALL_SIZE))
         if right_summary:
             parts.append(self._text(right_x, 580, right_w, 35, right_summary,
-                                    font_size=12, color=right_summary_color, bold=True))
+                                    font_size=SMALL_SIZE, color=right_summary_color, bold=True))
         if bottom_bar:
             parts.append(add_bottom_bar(bottom_bar[0], bottom_bar[1]))
         parts.append(self._footer(source))
@@ -650,14 +666,16 @@ class MckHtmlEngine:
                                 headline, font_size=SUB_HEADER_SIZE, color=WHITE,
                                 bold=True, valign='middle'))
         iy = CONTENT_TOP + 150
+        avail_h = SOURCE_Y - 20 - iy
+        item_h = min(75, int(avail_h / max(len(items), 1)))
         for num, ititle, desc in items:
             parts.append(self._oval(LM, iy, str(num)))
-            parts.append(self._text(LM + 60, iy, 350, 40, ititle,
+            parts.append(self._text(LM + 60, iy, 350, 50, ititle,
                                     font_size=BODY_SIZE, color=NAVY, bold=True))
-            parts.append(self._text(500, iy, 750, 40, desc, font_size=BODY_SIZE))
-            iy += 60
+            parts.append(self._text(500, iy, 750, 50, desc, font_size=BODY_SIZE))
+            iy += item_h
             parts.append(self._hline(LM, iy, CW, LINE_GRAY))
-            iy += 30
+            iy += 15
         parts.append(self._footer(source))
         self._add_slide(make_slide('\n'.join(parts), f'slide-{p}'))
         return self
@@ -693,14 +711,14 @@ class MckHtmlEngine:
         col_g = 20
         for i, (num, ctitle, desc) in enumerate(items):
             cx = LM + (col_w + col_g) * i
-            parts.append(self._abs(cx, CONTENT_TOP + 10, col_w, 480, bg=BG_GRAY))
+            parts.append(self._abs(cx, CONTENT_TOP + 10, col_w, 520, bg=BG_GRAY))
             parts.append(self._oval(cx + col_w // 2 - 22, CONTENT_TOP + 25, str(num)))
-            parts.append(self._text(cx + 15, CONTENT_TOP + 90, col_w - 30, 40,
+            parts.append(self._text(cx + 15, CONTENT_TOP + 90, col_w - 30, 50,
                                     ctitle, font_size=SUB_HEADER_SIZE, color=NAVY,
                                     bold=True, align='center'))
-            parts.append(self._hline(cx + 30, CONTENT_TOP + 140, col_w - 60, LINE_GRAY))
+            parts.append(self._hline(cx + 30, CONTENT_TOP + 150, col_w - 60, LINE_GRAY))
             desc_items = desc if isinstance(desc, list) else [desc]
-            parts.append(self._text(cx + 15, CONTENT_TOP + 160, col_w - 30, 300,
+            parts.append(self._text(cx + 15, CONTENT_TOP + 165, col_w - 30, 340,
                                     desc_items, font_size=BODY_SIZE, align='center'))
         parts.append(self._footer(source))
         self._add_slide(make_slide('\n'.join(parts), f'slide-{p}'))

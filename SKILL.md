@@ -292,6 +292,9 @@ Font stacks:
 7. **Print-safe** — media queries ensure clean page breaks
 8. **Accessible** — semantic HTML structure, readable font sizes
 9. **Dynamic title** — toolbar brand and HTML `<title>` automatically use the `cover()` title (newlines collapsed to spaces, HTML entities escaped). No manual title configuration needed
+10. **pt→px calibration** — all font sizes converted from PPT pt values (×1.333) so on-screen size matches the PPT version: BODY=18px, SMALL=15px, SUB_HEADER=22px, ACTION_TITLE=28px, SECTION_TITLE=36px, COVER_TITLE=56px
+11. **Compact line-height** — default `line-height: 1.35` (matching PPT's tight spacing) instead of browser-default 1.5; text-body, text-small, text-emphasis all use 1.35 or 1.25
+12. **Font-size downgrade** — `data_table()` and `table_insight()` auto-downgrade cell font size (BODY→SMALL→13px) when row density is high, mimicking PowerPoint's autofit behavior
 
 ---
 
