@@ -1,0 +1,11 @@
+# IDE & OS
+.DS_Store
+.codebuddy/
+__pycache__/
+*.pyc
+
+# Generated output files (examples, not part of the skill)
+output/*.html
+
+# Temp files
+.commit_msg.tmp
