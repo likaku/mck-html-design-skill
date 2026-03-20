@@ -32,6 +32,7 @@ class MckHtmlEngine:
         self._slides = []
         self._page = 0
         self.total = total_slides
+        self._cover_title = ''
 
     # ─── internal ──────────────────────────────
     def _ns(self):
@@ -89,6 +90,8 @@ class MckHtmlEngine:
 
     def cover(self, title, subtitle='', author='', date=''):
         """Cover Slide — title, subtitle, author, date, accent line."""
+        # Store title for toolbar / <title> tag (collapse newlines to space)
+        self._cover_title = title.replace('\n', ' ') if isinstance(title, str) else str(title)
         p = self._ns()
         parts = []
         # Top accent line
@@ -2459,8 +2462,11 @@ class MckHtmlEngine:
             )
             processed_slides.append(injected)
 
+        brand = self._cover_title or 'Presentation'
+        # Escape HTML entities in title
+        brand_safe = brand.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
         toolbar_html = f'''<div class="toolbar">
-    <span class="toolbar-brand">McKinsey Presentation</span>
+    <span class="toolbar-brand">{brand_safe}</span>
     <button data-mode="scroll" class="active" onclick="setViewMode('scroll')" title="上下滚动浏览">📜 滚动</button>
     <span class="separator"></span>
     <button data-mode="page" onclick="setViewMode('page')" title="点击翻页浏览">📄 翻页</button>
@@ -2481,7 +2487,7 @@ class MckHtmlEngine:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>McKinsey Presentation</title>
+    <title>{brand_safe}</title>
     <style>
 {get_base_css()}
     </style>

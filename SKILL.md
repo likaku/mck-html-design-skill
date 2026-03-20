@@ -291,6 +291,7 @@ Font stacks:
 6. **Self-contained output** — no external dependencies in generated HTML
 7. **Print-safe** — media queries ensure clean page breaks
 8. **Accessible** — semantic HTML structure, readable font sizes
+9. **Dynamic title** — toolbar brand and HTML `<title>` automatically use the `cover()` title (newlines collapsed to spaces, HTML entities escaped). No manual title configuration needed
 
 ---
 
