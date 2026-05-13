@@ -4,8 +4,14 @@
 __pycache__/
 *.pyc
 
+# Virtual environments
+.venv*/
+
 # Generated output files (examples, not part of the skill)
 output/*.html
+
+# Project working directories (user-specific)
+projects/
 
 # Temp files
 .commit_msg.tmp

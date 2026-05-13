@@ -6,6 +6,11 @@ Usage:
     eng.toc(items=[('1','Topic','Desc'), ...])
     eng.save('output/deck.html')
 
+ECharts integration (opt-in, enabled by default):
+    eng = MckHtmlEngine(total_slides=12, use_echarts=True)
+    eng.echart_grouped_bar(...)   # interactive ECharts chart
+    eng.grouped_bar(...)          # original SVG chart (still available)
+
 Every layout method creates one slide and auto-increments page numbers.
 API is identical to MckEngine (PPT version) — same method names, same parameters.
 Output is a self-contained HTML file instead of .pptx.
@@ -22,17 +27,23 @@ from .core import (
     add_image_placeholder, add_text,
     make_donut_svg, make_pie_svg, make_gauge_svg, make_harvey_ball_html,
 )
+from .echarts_charts import EChartsMixin, ECHARTS_CDN, NOTO_SERIF_SC_CSS
 
 
-class MckHtmlEngine:
+class MckHtmlEngine(EChartsMixin):
     """HTML Presentation engine with high-level layout methods.
-    API-compatible with MckEngine (PPT version)."""
+    API-compatible with MckEngine (PPT version).
+    Inherits EChartsMixin for interactive chart methods (echart_* prefix)."""
 
-    def __init__(self, total_slides=30):
+    def __init__(self, total_slides=30, use_echarts=True):
         self._slides = []
         self._page = 0
         self.total = total_slides
         self._cover_title = ''
+        # ECharts state (managed by EChartsMixin)
+        self._echarts_injected = False
+        self._echarts_scripts = []
+        self._use_echarts = use_echarts
 
     # ─── internal ──────────────────────────────
     def _ns(self):
@@ -2506,6 +2517,9 @@ class MckHtmlEngine:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{brand_safe}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{NOTO_SERIF_SC_CSS}">
+    {f'<script src="{ECHARTS_CDN}"></script>' if self._echarts_injected else ''}
     <style>
 {get_base_css()}
     </style>
@@ -2518,6 +2532,7 @@ class MckHtmlEngine:
 </div>
 {nav_html}
 {get_presentation_js()}
+{self._build_echarts_init_block()}
 </body>
 </html>'''
 
@@ -2525,5 +2540,13 @@ class MckHtmlEngine:
             f.write(html_content)
 
         size = os.path.getsize(outpath)
-        print(f"✅ Saved: {outpath} ({self._page} slides, {size:,} bytes)")
+        echarts_note = f' + {len(self._echarts_scripts)} ECharts' if self._echarts_scripts else ''
+        print(f"✅ Saved: {outpath} ({self._page} slides{echarts_note}, {size:,} bytes)")
         return outpath
+
+    def _build_echarts_init_block(self):
+        """Build the <script> block that initialises all ECharts instances."""
+        if not self._echarts_scripts:
+            return ''
+        scripts = '\n'.join(self._echarts_scripts)
+        return f'<script>\n// ECharts chart initializations\n{scripts}\n</script>'
